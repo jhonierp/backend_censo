@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+import dj_database_url
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
+CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,13 +42,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_yasg',#swagger documentacion
     'rest_framework',
+    'corsheaders',
     'personas',
     'familias',
     'actividades',
     'censos',
     'censo_actividades',
     'multas',
-    'users'
+    'users',
+    'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
@@ -57,9 +61,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
-AUTH_USER_MODEL='users.User'
+
 
 ROOT_URLCONF = 'api_cabildo.urls'
 
@@ -87,22 +97,26 @@ WSGI_APPLICATION = 'api_cabildo.wsgi.application'
 '''
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-'''
-DATABASES = {
-    'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'cabildo',
         'USER': 'yeider',
-        'PASSWORD': 'EXMzFRXeiu17DaA2rnoF0S4B5UDtBhyq',
-        'HOST': 'dpg-cpcb92f79t8c73c6pse0-a.oregon-postgres.render.com',  # O la dirección IP de tu servidor MySQL
+        'PASSWORD': 'rK6f3YLMs6NCSuPaVqQUPtXd8QSO36Rk',
+        'HOST': 'dpg-cr7779pu0jms73af94d0-a.oregon-postgres.render.com',  # O la dirección IP de tu servidor MySQL
         'PORT': '5432',       # Puerto de MySQL (por defecto es 3306)
     }
 }
 
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'cabildo',
+        'USER': 'root',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',  # o la dirección de tu servidor MySQL
+        'PORT': '3306',  # o el puerto de tu servidor MySQL
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -140,10 +154,30 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#config static 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_TMP = os.path.join(BASE_DIR,'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+os.makedirs(STATIC_TMP, exist_ok=True)
+os.makedirs(STATIC_ROOT, exist_ok=True) 
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
+
+AUTH_USER_MODEL='users.User'
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  # Cambia a 1 hora
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
